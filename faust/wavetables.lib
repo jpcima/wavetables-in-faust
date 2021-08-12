@@ -1,0 +1,22 @@
+import("stdfaust.lib");
+
+// Wavetable oscillator
+// WT: wavetable
+// f: oscillator frequency
+oscw(WT, f) = oscwDetail(WT.tableSize, WT.numTables, WT.firstStartFrequency, WT.lastStartFrequency, WT.waveData, f);
+
+// Wavetable oscillator
+// M: table size
+// N: number of tables
+// F1: start frequency of the first table in the mipmap
+// FN: start frequency of the last table in the mipmap
+// T: table [N*M]
+// f: oscillator frequency
+oscwDetail(M, N, F1, FN, T, f) = (y1, y2) : si.interpolate(mu) with {
+  phase = os.lf_sawpos(f);
+  tableNo = ba.if(f<F1, 0.0, log(f/F1)*((N-1)/log(FN/F1))) : max(0) : min(N-1) : int;
+  pos = M*phase;
+  mu = pos-int(pos);
+  y1 = int(pos) : +(tableNo*M) : rdtable(N*M, T);
+  y2 = (int(pos)+1)%M : +(tableNo*M) : rdtable(N*M, T);
+};
